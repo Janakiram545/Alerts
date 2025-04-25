@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import os
@@ -9,6 +8,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from email.mime.text import MIMEText
+
+# Step 1: Write credentials.json from secrets (MUST be done before Gmail access)
+with open("credentials.json", "w") as f:
+    f.write(st.secrets["GOOGLE_CREDS"])
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
@@ -91,7 +94,7 @@ st.title("📧 Zoho Billing Alert System")
 uploaded_file = st.file_uploader("Upload Zoho Alert Excel", type=["xlsx"])
 
 if uploaded_file is not None:
-    df = pd.read_excel(uploaded_file)
+    df = pd.read_excel(uploaded_file, engine="openpyxl")  # force openpyxl
     st.success("File uploaded successfully!")
     st.dataframe(df)
 
