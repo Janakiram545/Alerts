@@ -5,18 +5,16 @@ import base64
 import json
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+from google.oauth2.service_account import Credentials
 from email.mime.text import MIMEText
 
-# Step 1: Write credentials.json from secrets (MUST be done before Gmail access)
-# Google credentials will be retrieved from Streamlit secrets
-google_creds = json.loads(st.secrets["GOOGLE_CREDS"])
+# Load Service Account credentials from Streamlit secrets
+service_account_info = json.loads(st.secrets["GOOGLE_CREDS"])
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
-# Gmail API auth
+# Gmail API auth using Service Account
 def get_gmail_service():
     creds = None
     if os.path.exists('token.json'):
@@ -26,10 +24,11 @@ def get_gmail_service():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_config(google_creds, SCOPES)
-            creds = flow.run_console()  # This will use console-based OAuth2 authorization
-        with open('token.json', 'w') as token_file:
-            token_file.write(creds.to_json())
+            creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
+
+            # Optional: Save the credentials for the future use (not necessary for streamlit deployment)
+            with open('token.json', 'w') as token_file:
+                token_file.write(creds.to_json())
 
     service = build('gmail', 'v1', credentials=creds)
     return service
