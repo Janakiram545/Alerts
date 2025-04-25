@@ -1,10 +1,17 @@
 import streamlit as st
+import pandas as pd
+import os
+import base64
 import json
-from google.auth.transport.requests import Request
+from datetime import datetime, timedelta
+from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.credentials import Credentials
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from email.mime.text import MIMEText
 
-# Load Google credentials from Streamlit secrets
+# Step 1: Write credentials.json from secrets (MUST be done before Gmail access)
+# Google credentials will be retrieved from Streamlit secrets
 google_creds = json.loads(st.secrets["GOOGLE_CREDS"])
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
@@ -26,7 +33,6 @@ def get_gmail_service():
 
     service = build('gmail', 'v1', credentials=creds)
     return service
-
 
 # Create email message
 def create_html_message(sender, to, subject, html_content):
@@ -56,9 +62,6 @@ def process_alerts(df):
     service = get_gmail_service()
 
     logs = []
-    if service is None:
-        return [("Error", "Service not initialized", "", "", "")]
-
     for index, row in df.iterrows():
         domain = row['domain name']
         end_date = pd.to_datetime(row['Zoho_end period']).date()
