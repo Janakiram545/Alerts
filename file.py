@@ -26,12 +26,27 @@ def get_gmail_service():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
+            creds = flow.run_console()  # This will use console-based OAuth2 authorization
         with open('token.json', 'w') as token_file:
             token_file.write(creds.to_json())
 
     service = build('gmail', 'v1', credentials=creds)
     return service
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Create email message
 def create_html_message(sender, to, subject, html_content):
