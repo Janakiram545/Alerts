@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 
 # Load Service Account credentials from Streamlit secrets
 try:
-    service_account_info = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT"])
+    service_account_info = json.loads(st.secrets["GOOGLE_CREDS"])
 except json.JSONDecodeError as e:
     st.error(f"Error parsing service account JSON: {e}")
     raise
