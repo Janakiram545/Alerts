@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import os
 import base64
 import json
 from datetime import datetime, timedelta
@@ -10,7 +9,11 @@ from google.oauth2.service_account import Credentials
 from email.mime.text import MIMEText
 
 # Load Service Account credentials from Streamlit secrets
-service_account_info = json.loads(st.secrets["GOOGLE_CREDS"])
+try:
+    service_account_info = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT"])
+except json.JSONDecodeError as e:
+    st.error(f"Error parsing service account JSON: {e}")
+    raise
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
