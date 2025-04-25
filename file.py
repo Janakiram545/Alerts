@@ -1,17 +1,11 @@
 import streamlit as st
-import pandas as pd
-import os
-import base64
-from datetime import datetime, timedelta
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
+import json
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from email.mime.text import MIMEText
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.credentials import Credentials
 
-# Step 1: Write credentials.json from secrets (MUST be done before Gmail access)
-with open("credentials.json", "w") as f:
-    f.write(st.secrets["GOOGLE_CREDS"])
+# Load Google credentials from Streamlit secrets
+google_creds = json.loads(st.secrets["GOOGLE_CREDS"])
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
@@ -25,27 +19,13 @@ def get_gmail_service():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            flow = InstalledAppFlow.from_client_config(google_creds, SCOPES)
             creds = flow.run_console()  # This will use console-based OAuth2 authorization
         with open('token.json', 'w') as token_file:
             token_file.write(creds.to_json())
 
     service = build('gmail', 'v1', credentials=creds)
     return service
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # Create email message
@@ -76,6 +56,9 @@ def process_alerts(df):
     service = get_gmail_service()
 
     logs = []
+    if service is None:
+        return [("Error", "Service not initialized", "", "", "")]
+
     for index, row in df.iterrows():
         domain = row['domain name']
         end_date = pd.to_datetime(row['Zoho_end period']).date()
