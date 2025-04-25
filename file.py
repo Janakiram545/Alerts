@@ -9,10 +9,18 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from email.mime.text import MIMEText
 
-# Step 1: Write credentials.json from secrets (MUST be done before Gmail access)
-with open("credentials.json", "w") as f:
-    f.write(st.secrets["GOOGLE_CREDS"])
+# Step 1: Access Google credentials from Streamlit secrets
+google_creds = st.secrets["google_creds"]
 
+# Extract values from Streamlit secrets
+client_id = google_creds["client_id"]
+client_secret = google_creds["client_secret"]
+auth_uri = google_creds["auth_uri"]
+token_uri = google_creds["token_uri"]
+auth_provider_x509_cert_url = google_creds["auth_provider_x509_cert_url"]
+redirect_uris = google_creds["redirect_uris"]
+
+# Define the Gmail API scope
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
 # Gmail API auth
@@ -21,16 +29,16 @@ def get_gmail_service():
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
 
-    # If there are no valid credentials, initiate the OAuth2 flow
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            # OAuth2 flow using the installed client credentials
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)  # Start a local server to complete the authentication
+            # Using InstalledAppFlow for OAuth2
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_console()  # This will use console-based OAuth2 authorization
         with open('token.json', 'w') as token_file:
-            token_file.write(creds.to_json())  # Save credentials for the next run
+            token_file.write(creds.to_json())
 
     service = build('gmail', 'v1', credentials=creds)
     return service
@@ -58,8 +66,8 @@ def process_alerts(df):
         'Annually': 30
     }
 
-    sender_email = 'janakiram@techprofuse.com'
-    receiver_email = 'rakshitham@techprofuse.com'
+    sender_email = 'your-email@domain.com'  # Your Gmail address
+    receiver_email = 'receiver-email@domain.com'  # Receiver's email address
     service = get_gmail_service()
 
     logs = []
