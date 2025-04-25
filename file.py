@@ -1,43 +1,36 @@
 import streamlit as st
 import pandas as pd
-import base64
-import json
 import os
+import base64
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from google.oauth2.service_account import Credentials
+from google.oauth2.credentials import Credentials
 from email.mime.text import MIMEText
 
-# Load Service Account credentials from Streamlit secrets
-try:
-    service_account_info = json.loads(st.secrets["GOOGLE_CREDS"])
-except json.JSONDecodeError as e:
-    st.error(f"Error parsing service account JSON: {e}")
-    raise
+# Step 1: Write credentials.json from secrets (MUST be done before Gmail access)
+with open("credentials.json", "w") as f:
+    f.write(st.secrets["GOOGLE_CREDS"])
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
-# Gmail API auth using Service Account
+# Gmail API auth
 def get_gmail_service():
     creds = None
-
-    # Check if token.json exists and load credentials
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    else:
-        # If token.json does not exist, create new credentials
-        creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
 
+    # If there are no valid credentials, initiate the OAuth2 flow
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
-
-        # Save credentials for future use
+            # OAuth2 flow using the installed client credentials
+            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)  # Start a local server to complete the authentication
         with open('token.json', 'w') as token_file:
-            token_file.write(creds.to_json())
+            token_file.write(creds.to_json())  # Save credentials for the next run
 
     service = build('gmail', 'v1', credentials=creds)
     return service
