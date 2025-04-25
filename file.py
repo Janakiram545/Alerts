@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import base64
 import json
+import os
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
@@ -20,8 +21,13 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 # Gmail API auth using Service Account
 def get_gmail_service():
     creds = None
+
+    # Check if token.json exists and load credentials
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    else:
+        # If token.json does not exist, create new credentials
+        creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -29,9 +35,9 @@ def get_gmail_service():
         else:
             creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
 
-            # Optional: Save the credentials for the future use (not necessary for streamlit deployment)
-            with open('token.json', 'w') as token_file:
-                token_file.write(creds.to_json())
+        # Save credentials for future use
+        with open('token.json', 'w') as token_file:
+            token_file.write(creds.to_json())
 
     service = build('gmail', 'v1', credentials=creds)
     return service
