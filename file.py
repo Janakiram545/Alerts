@@ -36,17 +36,20 @@ def manual_auth_flow():
     st.info(f"👉 Please authorize: [Click here to authorize]({auth_url})")
     auth_code = st.text_input("🔑 Paste the authorization code here:")
 
-if auth_code:
-    try:
-        flow.fetch_token(code=auth_code)
-        creds = flow.credentials
-        with open('token.json', 'w') as token_file:
-            token_file.write(creds.to_json())
-        st.success("✅ Authorization successful! Please now click 'Send Alerts'.")
-        st.rerun()
-    except Exception as e:
-        st.error(f"❌ Failed to fetch token: {e}")
+    if auth_code:
+        try:
+            flow.fetch_token(code=auth_code)
+            creds = flow.credentials
+            with open(TOKEN_FILE, 'w') as token_file:
+                token_file.write(creds.to_json())
+            st.success("✅ Authorization successful! Please now click 'Send Alerts'.")
+            st.rerun()
+        except Exception as e:
+            st.error(f"❌ Failed to fetch token: {e}")
+            st.stop()
+    else:
         st.stop()
+
 
 
 
