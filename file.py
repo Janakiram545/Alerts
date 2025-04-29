@@ -70,7 +70,7 @@ def send_email(service, user_id, message):
 def process_alerts(df, service):
     today = datetime.now().date()
     alert_days = {
-        'Monthly': 4,
+        'Monthly': 3,
         'Quarterly': 7,
         'Half-yearly': 15,
         'Annually': 30
