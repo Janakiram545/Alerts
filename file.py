@@ -75,7 +75,7 @@ def process_alerts(df):
     }
 
     sender_email = 'janakiram@techprofuse.com'
-    receiver_email = 'rakshitham@techprofuse.com'
+    receiver_email = 'kumara@techprofuse.com'
     service = get_gmail_service()
 
     logs = []
