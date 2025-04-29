@@ -20,6 +20,8 @@ elif not os.path.exists("credentials.json"):
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
 # Gmail API auth
+from google_auth_oauthlib.flow import Flow
+
 def get_gmail_service():
     creds = None
     if os.path.exists('token.json'):
@@ -29,13 +31,25 @@ def get_gmail_service():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_console()  # ← fix: console flow instead of browser
-        with open('token.json', 'w') as token_file:
-            token_file.write(creds.to_json())
+            flow = Flow.from_client_secrets_file('credentials.json', scopes=SCOPES)
+            flow.redirect_uri = 'urn:ietf:wg:oauth:2.0:oob'
+            
+            auth_url, _ = flow.authorization_url(prompt='consent')
+
+            st.info(f"Please go to this URL and authorize: {auth_url}")
+            auth_code = st.text_input("Enter the authorization code:")
+            
+            if auth_code:
+                flow.fetch_token(code=auth_code)
+                creds = flow.credentials
+                with open('token.json', 'w') as token_file:
+                    token_file.write(creds.to_json())
+            else:
+                st.stop()  # Stop the app until the code is provided
 
     service = build('gmail', 'v1', credentials=creds)
     return service
+
 
 # Create email message
 def create_html_message(sender, to, subject, html_content):
