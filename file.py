@@ -77,7 +77,7 @@ def process_alerts(df, service):
     }
 
     sender_email = 'janakiram@techprofuse.com'
-    receiver_email = 'srilakshmiv@techprofuse.com'
+    receiver_email = 'kumara@techprofuse.com'
     logs = []
 
     for index, row in df.iterrows():
