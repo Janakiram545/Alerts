@@ -36,7 +36,7 @@ def manual_auth_flow():
     st.info(f"👉 Please authorize: [Click here to authorize]({auth_url})")
     auth_code = st.text_input("🔑 Paste the authorization code here:")
 
-    if auth_code:
+if auth_code:
     try:
         flow.fetch_token(code=auth_code)
         creds = flow.credentials
@@ -47,6 +47,7 @@ def manual_auth_flow():
     except Exception as e:
         st.error(f"❌ Failed to fetch token: {e}")
         st.stop()
+
 
 
 # Gmail Email Creation
