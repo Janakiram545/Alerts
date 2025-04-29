@@ -102,8 +102,8 @@ def process_alerts(df, service):
             message = create_html_message(sender_email, receiver_email, subject, html_content)
             result = send_email(service, 'me', message)
             logs.append((domain, str(end_date), frequency, '✅ Sent', result['id']))
-        else:
-            logs.append((domain, str(end_date), frequency, '⏳ Not due today', ''))
+        # else:
+        #     logs.append((domain, str(end_date), frequency, '⏳ Not due today', ''))
 
     return logs
 
