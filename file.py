@@ -30,7 +30,7 @@ def get_gmail_service():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)  # Browser-based OAuth
+            creds = flow.run_console()  # ← fix: console flow instead of browser
         with open('token.json', 'w') as token_file:
             token_file.write(creds.to_json())
 
