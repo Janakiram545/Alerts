@@ -9,9 +9,13 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from email.mime.text import MIMEText
 
-# Step 1: Write credentials.json from secrets (MUST be done before Gmail access)
-with open("credentials.json", "w") as f:
-    f.write(st.secrets["GOOGLE_CREDS"])
+# Step 1: Handle credentials
+if "GOOGLE_CREDS" in st.secrets:
+    with open("credentials.json", "w") as f:
+        f.write(st.secrets["GOOGLE_CREDS"])
+elif not os.path.exists("credentials.json"):
+    st.error("❌ Missing credentials! Please upload credentials.json or set GOOGLE_CREDS in secrets.toml.")
+    st.stop()
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
@@ -26,7 +30,7 @@ def get_gmail_service():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)  # This will use browser-based OAuth2 authorization
+            creds = flow.run_local_server(port=0)  # Browser-based OAuth
         with open('token.json', 'w') as token_file:
             token_file.write(creds.to_json())
 
@@ -88,21 +92,21 @@ def process_alerts(df):
 
     return logs
 
-# UI starts here
+# Streamlit UI
 st.title("📧 Zoho Billing Alert System")
 
 uploaded_file = st.file_uploader("Upload Zoho Alert Excel", type=["xlsx"])
 
 if uploaded_file is not None:
     try:
-        df = pd.read_excel(uploaded_file, engine="openpyxl")  # force openpyxl
-        st.success("File uploaded successfully!")
+        df = pd.read_excel(uploaded_file, engine="openpyxl")
+        st.success("✅ File uploaded successfully!")
         st.dataframe(df)
 
         if st.button("🚀 Send Alerts"):
             logs = process_alerts(df)
-            st.success("Alerts processed!")
-            st.write("Log Summary:")
+            st.success("✅ Alerts processed!")
+            st.write("📄 Log Summary:")
             st.dataframe(pd.DataFrame(logs, columns=['Domain', 'End Date', 'Frequency', 'Status', 'Message ID']))
     except Exception as e:
-        st.error(f"Error reading the file: {e}")
+        st.error(f"❌ Error reading the file: {e}")
