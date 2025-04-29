@@ -273,7 +273,7 @@ if uploaded_file is not None:
                 file_path, due_alerts = prepare_alerts_file(df)
                 if file_path and due_alerts:
                     sender_email = 'janakiram@techprofuse.com'
-                    receiver_email = 'kumara@techprofuse.com'
+                    receiver_email = 'srilakshmiv@techprofuse.com'
                     subject = "🔔 Zoho Billing Alerts Summary"
                     html_content = f"""
                     <p>Dear Team,</p>
